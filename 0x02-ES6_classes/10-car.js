@@ -1,16 +1,41 @@
-// Defining the Car class
-class Car {
+export default class Car {
   constructor(brand, motor, color) {
-    this._brand = brand;
-    this._motor = motor;
-    this._color = color;
+    this.brand = brand;
+    this.motor = motor;
+    this.color = color;
   }
 
-  // Method to clone the car object
+  get brand() {
+    return this._brand;
+  }
+
+  set brand(value) {
+    this._brand = value;
+  }
+
+  get motor() {
+    return this._motor;
+  }
+
+  set motor(value) {
+    this._motor = value;
+  }
+
+  get color() {
+    return this._color;
+  }
+
+  set color(value) {
+    this._color = value;
+  }
+
+  static get [Symbol.species]() {
+    return this;
+  }
+
   cloneCar() {
-    // Create a new instance of the same class (this.constructor)
-    return new this.constructor(this._brand, this._motor, this._color);
+    const Species = this.constructor[Symbol.species];
+
+    return new Species();
   }
 }
-
-export default Car;
