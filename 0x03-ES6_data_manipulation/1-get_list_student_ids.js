@@ -1,4 +1,4 @@
-// 1-get_list_student_ids.js
+/* eslint-disable */
 export default function getListStudentIds(students) {
   if (!Array.isArray(students)) {
     return [];

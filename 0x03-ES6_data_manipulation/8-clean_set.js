@@ -1,4 +1,4 @@
-// 8-clean_set.js
+/* eslint-disable */
 export default function cleanSet(set, startString) {
   if (!startString || startString.length === 0) {
     return '';

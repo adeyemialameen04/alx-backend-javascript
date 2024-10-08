@@ -1,4 +1,4 @@
-// 2-get_students_by_loc.js
+// 1-get_list_student_ids.js
 export default function getStudentsByLocation(students, city) {
-  return students.filter(student => student.location === city);
+  return students.filter((student) => student.location === city);
 }
