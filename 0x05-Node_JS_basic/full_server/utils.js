@@ -1,26 +1,41 @@
-import fs from 'fs';
+import { readFile } from 'fs';
 
-// eslint-disable-next-line import/prefer-default-export
-export const readDatabase = (filePath) => new Promise((resolve, reject) => {
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      reject(err);
-    } else {
-      const lines = data.trim().split('\n');
-      const fields = {};
-      lines.forEach((line, index) => {
-        if (index === 0) {
-          // Skip the header line
-          return;
+function readDatabase(path) {
+  return new Promise((resolve, reject) => {
+    readFile(path, 'utf-8', (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const dataArray = data.toString().split('\n').map((e) => e.trim())
+          .map((e) => e.split(',').map((e) => e.trim()));
+        const dataKeys = dataArray.shift();
+        const result = [];
+        const dataSet = new Set();
+        const res = {};
+
+        for (let i = 0; i < dataArray.length; i += 1) {
+          const dataJson = {};
+          for (let j = 0; j < dataArray[i].length; j += 1) {
+            if (dataArray[i][j] !== '') {
+              dataJson[dataKeys[j]] = dataArray[i][j];
+              if (dataKeys[j] === 'field') {
+                dataSet.add(dataArray[i][j]);
+              }
+            }
+          }
+          result.push(dataJson);
         }
-        // eslint-disable-next-line no-unused-vars
-        const [firstName, lastName, age, field] = line.split(',');
-        if (!fields[field]) {
-          fields[field] = [];
-        }
-        fields[field].push(`${firstName} ${lastName}`);
-      });
-      resolve(fields);
-    }
+
+        const validResult = result.filter((item) => Object.keys(item).length !== 0);
+        dataSet.forEach((value) => {
+          const arr = validResult.filter((item) => item.field === value);
+          const firstNames = arr.map((item) => item.firstname);
+          res[value] = firstNames;
+        });
+        resolve(res);
+      }
+    });
   });
-});
+}
+
+export default readDatabase;
