@@ -1,99 +1,72 @@
-/* eslint-disable jest/expect-expect */
-const assert = require('assert');
-const http = require('http');
+const { expect } = require('chai');
+const request = require('request');
 
-// Set up the endpoint URLs
-const BASE_URL = 'http://localhost:7866';
-const LOGIN_URL = `${BASE_URL}/login`;
-const PAYMENTS_URL = `${BASE_URL}/available_payments`;
-
-// Test the /login endpoint
-describe('/login', () => {
-  it('should return a welcome message with the username', () => new Promise((done) => {
-    // Define the request payload
-    const payload = JSON.stringify({ userName: 'john_doe' });
-
-    // Set up the request options
-    const options = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      url: LOGIN_URL,
-      body: payload,
-    };
-
-    // Send the request
-    const req = http.request(options, (res) => {
-      let data = '';
-
-      // Set up the response listener
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-
-      // Set up the end listener
-      res.on('end', () => {
-        // Parse the response body
-        const body = JSON.parse(data);
-
-        // Check the status code
-        assert.strictEqual(res.statusCode, 200);
-
-        // Check the response message
-        assert.strictEqual(body.message, 'Welcome john_doe');
-
-        // Done
+describe("api index page", function () {
+  it("test status code", function (done) {
+    request.get('http://localhost:7865/', (err, res, body) => {
+      if (res) {
+        expect(res.statusCode).to.equal(200);
         done();
-      });
+      }
     });
-
-    // Send the request payload
-    req.write(payload);
-
-    // End the request
-    req.end();
-  }));
+  });
+  it("test correct output", function (done) {
+    request.get('http://localhost:7865/', (err, res, body) => {
+      if (body) {
+        expect(body).to.equal('Welcome to the payment system');
+        done();
+      }
+    });
+  });
 });
 
-// Test the /available_payments endpoint
-describe('/available_payments', () => {
-  it('should return the list of available payments', () => new Promise((done) => {
-    // Set up the request options
-    const options = {
-      method: 'GET',
-      url: PAYMENTS_URL,
-    };
+describe("api cart page", function () {
+  it("test valid number param", function (done) {
+    request.get('http://localhost:7865/cart/12', (err, res, body) => {
+      if (res && body) {
+        expect(res.statusCode).to.equal(200);
+        expect(body).to.equal('Payment methods for cart 12');
+        done();
+      }
+    });
+  });
+  it("test non-number param", function (done) {
+    request.get('http://localhost:7865/cart/hello', (err, res, body) => {
+      if (res) {
+        expect(res.statusCode).to.equal(404);
+        done();
+      }
+    });
+  });
+});
 
-    // Send the request
-    const req = http.request(options, (res) => {
-      let data = '';
+describe("login page", function () {
+  it("tests correct output", function (done) {
+    const data = { "userName": "Betty" }
+    request.post('http://localhost:7865/login', { json: data }, (err, res, body) => {
+      if (res && body) {
+        expect(res.statusCode).to.equal(200);
+        expect(body).to.equal('Welcome Betty');
+        done();
+      }
+    });
+  });
+});
 
-      // Set up the response listener
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-
-      // Set up the end listener
-      res.on('end', () => {
-        // Parse the response body
-        const body = JSON.parse(data);
-
-        // Check the status code
-        assert.strictEqual(res.statusCode, 200);
-
-        // Check the response structure
-        assert.deepStrictEqual(body, {
+describe("available_payments page", function () {
+  it("tests correct output", function (done) {
+    request.get('http://localhost:7865/available_payments', (err, res, body) => {
+      if (res && body) {
+        expect(res.statusCode).to.equal(200);
+        const data = {
           payment_methods: {
             credit_cards: true,
-            paypal: false,
-          },
-        });
-
-        // Done
+            paypal: false
+          }
+        };
+        expect(JSON.parse(body)).to.deep.equal(data);
         done();
-      });
+      }
     });
-
-    // End the request
-    req.end();
-  }));
+  });
 });
